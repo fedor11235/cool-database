@@ -7,7 +7,7 @@ import socket
 def funcData():
     var = {'var0' : 0,   'var2' : 'some string', 'var1' : ['listiteпэк','listitem2',5]}
 
-    varBytes = json.dumps(var).encode('utf-8') 
+    varBytes = json.dumps(var).encode('utf-8')
     length = len(varBytes)
 
     lengtOne = length // 256
