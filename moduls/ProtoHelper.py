@@ -9,17 +9,17 @@ import random
 
 # маскировать, задаёт старший байт
 packetTypes = {
-    'auth_request': 0x0001, #запрос авторизации #нечётные клиента и чётные от сервера
-    'auth_response':0x8001, #ответ авторизации
-    'get_request': 0x0002, #запрос на чтение данных
-    'get_response': 0x2001, #ответ на чтение данных
+    "auth_request": 0x0001, #запрос авторизации #нечётные клиента и чётные от сервера
+    "auth_response":0x8001, #ответ авторизации
+    "get_request": 0x0002, #запрос на чтение данных
+    "get_response": 0x2001, #ответ на чтение данных
 }
 
 
 
-def build_proto_string(in_str, out_len): 
+def BuildProtoString(in_str, out_len): 
         out_str = bytearray(out_len)
-        in_str = bytearray(in_str, encoding = 'utf-8')
+        in_str = bytearray(in_str, encoding = "utf-8")
         out_str[0:len(in_str)] = in_str
         return out_str
 
@@ -27,7 +27,7 @@ def build_proto_string(in_str, out_len):
 def Decode(packetType, payload):
 
 
-    if packetType == 'auth_request':
+    if packetType == "auth_request":
         pass
     
     login = payload[3:30]
@@ -46,27 +46,27 @@ def Decode(packetType, payload):
 # исли мы знаем как строка кончается то мы терминируем
 def Encode(packetType, payload):
     payloadBin = b''
-    if packetType == 'auth_request':
-        login = payload['login']
-        password = payload['password']
-        payloadBin = build_proto_string(login, 30) + build_proto_string(password, 31)
+    if packetType == "auth_request":
+        login = payload["login"]
+        password = payload["password"]
+        payloadBin = BuildProtoString(login, 30) + BuildProtoString(password, 31)
     
-    if packetType == 'auth_response':
+    if packetType == "auth_response":
         rand=random.random()
-        var = bytearray (str(rand), encoding = 'utf-8')+bytearray (payload, encoding = 'utf-8')
+        var = bytearray (str(rand), encoding = "utf-8")+bytearray (payload, encoding = "utf-8")
         return var
 
-    if packetType=='get_request':
-        number = bytearray (payload[0], encoding = 'utf-8')
-        key = bytearray (payload[1], encoding = 'utf-8')
+    if packetType=="get_request":
+        number = bytearray (payload[0], encoding = "utf-8")
+        key = bytearray (payload[1], encoding = "utf-8")
 
-        var = b'\x0002' + number + key
+        var = b"\x0002" + number + key
         return var
 
-    if packetType=='get_response':
+    if packetType=="get_response":
         rand=random.random()
-        var = bytearray (str(rand), encoding = 'utf-8')+bytearray (payload, encoding = 'utf-8')
+        var = bytearray (str(rand), encoding = "utf-8")+bytearray (payload, encoding = "utf-8")
         return var
 
-    return packetTypes[packetType].to_bytes(2, 'big') + payloadBin
+    return packetTypes[packetType].to_bytes(2, "big") + payloadBin
     

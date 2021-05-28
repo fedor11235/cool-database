@@ -1,7 +1,5 @@
 def Crc16(data: bytes, poly=0x8408):
-    '''
-    CRC-16-CCITT Algorithm
-    '''
+    
     data = bytearray(data)
     crc = 0xFFFF
     for b in data:
