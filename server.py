@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
 import socket
 import json
 import sys
@@ -10,6 +9,7 @@ from moduls import Conf
 sock = socket.socket()
 sock.bind((Conf.HOST, Conf.PORT))
 sock.listen(1)
+
 while True: 
     conn, addr = sock.accept()
 
