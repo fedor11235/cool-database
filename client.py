@@ -1,14 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-import json
-import sys
+
 import socket
 from moduls import CRC16 
 from moduls import ProtoHelper
 from moduls import Conf
-
-host = Conf.HOST
-port = Conf.PORT
 
 sock = socket.socket()
 sock.connect((Conf.HOST, Conf.PORT))

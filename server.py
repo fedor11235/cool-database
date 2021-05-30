@@ -1,8 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+
 import socket
-import json
-import sys
 from moduls import ProtoHelper
 from moduls import Conf
 
