@@ -10,17 +10,17 @@ packetTypes = {
 }
 
 def BuildProtoString(in_str, out_len): 
-        out_str = bytearray(out_len)
-        in_str = bytearray(str(in_str), encoding = "utf-8")
-        out_str[0:len(in_str)] = in_str
-        return out_str
+    out_str = bytearray(out_len)
+    in_str = bytearray(str(in_str), encoding = "utf-8")
+    out_str[0:len(in_str)] = in_str
+    return out_str
 
 def BuildDecodeString(in_str, start_cut, end_cut):
     out_str = in_str[start_cut:end_cut].decode("utf-8")
     out_str = out_str.replace("\x00", "")
     return out_str
 
-def BuildDecodeСode(in_str):
+def GetDecodeСode(in_str):
     out_str = int.from_bytes(in_str[0:2],"big")
     out_str = hex(out_str)
     return out_str
@@ -30,7 +30,7 @@ def Decode(packetType, payloadBin):
     payload=''
     if packetType == "auth_request":
     
-        code = BuildDecodeСode(payloadBin)
+        code = GetDecodeСode(payloadBin)
         login = BuildDecodeString(payloadBin, 2, 30)
         password = BuildDecodeString(payloadBin, 32, 60)
 
@@ -38,7 +38,7 @@ def Decode(packetType, payloadBin):
 
     if packetType == "auth_response":
 
-        code = BuildDecodeСode(payloadBin)
+        code = GetDecodeСode(payloadBin)
         rand = BuildDecodeString(payloadBin, 2, 30)
         response = BuildDecodeString(payloadBin, 32, 60)
 
@@ -46,7 +46,7 @@ def Decode(packetType, payloadBin):
 
     if packetType=="get_request":
         
-        code = BuildDecodeСode(payloadBin)
+        code = GetDecodeСode(payloadBin)
         number = BuildDecodeString(payloadBin, 2, 30)
         key = BuildDecodeString(payloadBin, 32, 60)
 
@@ -54,7 +54,7 @@ def Decode(packetType, payloadBin):
 
     if packetType=="get_response":
 
-        code = BuildDecodeСode(payloadBin)
+        code = GetDecodeСode(payloadBin)
         rand = BuildDecodeString(payloadBin, 2, 30)
         response = BuildDecodeString(payloadBin, 32, 60)
 
@@ -74,16 +74,12 @@ def Encode(packetType, payload):
         payloadBin = BuildProtoString(rand, 30) + BuildProtoString(payload, 31)
 
     if packetType=="get_request":
-        # number = bytearray (payload[0], encoding = "utf-8")
-        # key = bytearray (payload[1], encoding = "utf-8")
-        # var = b"\x0002" + number + key
         number = payload["number"]
         key = payload["key"]
         payloadBin = BuildProtoString(number, 30) + BuildProtoString(key, 31)
 
     if packetType=="get_response":
         rand=random.random()
-        # var = bytearray (str(rand), encoding = "utf-8")+bytearray (payload, encoding = "utf-8")
         payloadBin = BuildProtoString(rand, 30) + BuildProtoString(payload, 31)
 
 

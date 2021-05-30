@@ -33,3 +33,7 @@ Content-Disposition: form-data; name="BodyKey"
 Машину состоянии описать сессии
 маскировать, задаёт старший байт
 Байтэрэит
+байтстафинг подмена для не путвания пакета
+
+python server.py
+python client.py

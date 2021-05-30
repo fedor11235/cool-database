@@ -1,0 +1,16 @@
+{
+    "users":[
+        {
+            "login": "Fedor",
+            "password" :"pass11235"
+        },
+        {
+            "login": "Danil",
+            "password" :"vargi"
+        },
+        {
+            "login": "Kiril",
+            "password": "7rok7olo"
+        }
+    ]
+}
