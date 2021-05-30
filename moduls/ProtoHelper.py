@@ -1,11 +1,6 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 import random
-# packetTypeEncoders = {
-#     'auth_request': lambda x: x**2, #запрос авторизации #нечётные клиента и чётные от сервера
-#     'auth_response':'', #ответ авторизации
-#     'get_request':'', #запрос на чтение данных
-#     'get_response':'', #ответ на чтение данных
-# }
-
 
 packetTypes = {
     "auth_request": 0x0001, #запрос авторизации #нечётные клиента и чётные от сервера
@@ -14,69 +9,59 @@ packetTypes = {
     "get_response": 0x2001, #ответ на чтение данных
 }
 
-
-
 def BuildProtoString(in_str, out_len): 
         out_str = bytearray(out_len)
         in_str = bytearray(str(in_str), encoding = "utf-8")
         out_str[0:len(in_str)] = in_str
         return out_str
 
+def BuildDecodeString(in_str, start_cut, end_cut):
+    out_str = in_str[start_cut:end_cut].decode("utf-8")
+    out_str = out_str.replace("\x00", "")
+    return out_str
+
+def BuildDecodeСode(in_str):
+    out_str = int.from_bytes(in_str[0:2],"big")
+    out_str = hex(out_str)
+    return out_str
 
 def Decode(packetType, payloadBin):
 
     payload=''
     if packetType == "auth_request":
+    
+        code = BuildDecodeСode(payloadBin)
+        login = BuildDecodeString(payloadBin, 2, 30)
+        password = BuildDecodeString(payloadBin, 32, 60)
 
-        idiDecimal = int.from_bytes(payloadBin[0:2],"big")
-        idi = hex(idiDecimal)
-
-        payload = payloadBin.decode("utf-8")
-        login = payload[2:30].replace("\x00", "")
-        password = payload[32:60].replace("\x00", "")
-
-
-        payload = {"idi":idi, "login": login, "password": password}
+        payload = {"code":code, "login": login, "password": password}
 
     if packetType == "auth_response":
 
-        idiDecimal = int.from_bytes(payloadBin[0:2],"big")
-        idi = hex(idiDecimal)
-        rand = payloadBin[2:30].decode("utf-8")
-        rand = rand.replace("\x00", "")
-        response = payloadBin[32:60].decode("utf-8")
-        response = response.replace("\x00", "")
+        code = BuildDecodeСode(payloadBin)
+        rand = BuildDecodeString(payloadBin, 2, 30)
+        response = BuildDecodeString(payloadBin, 32, 60)
 
-        payload={"idi":idi, "rand": rand, "response": response}
+        payload={"code":code, "rand": rand, "response": response}
 
     if packetType=="get_request":
         
-        idiDecimal = int.from_bytes(payloadBin[0:2],"big")
-        idi = hex(idiDecimal)
+        code = BuildDecodeСode(payloadBin)
+        number = BuildDecodeString(payloadBin, 2, 30)
+        key = BuildDecodeString(payloadBin, 32, 60)
 
-        number = payloadBin[2:30].decode("utf-8")
-        number = number.replace("\x00", "")
-        key = payloadBin[32:60].decode("utf-8")
-        key = key.replace("\x00", "")
-
-        payload={"idi":idi, "number": number, "key": key}
+        payload={"code":code, "number": number, "key": key}
 
     if packetType=="get_response":
-        idiDecimal = int.from_bytes(payloadBin[0:2],"big")
-        idi = hex(idiDecimal)
-        rand = payloadBin[2:30].decode("utf-8")
-        rand = rand.replace("\x00", "")
-        response = payloadBin[32:60].decode("utf-8")
-        response = response.replace("\x00", "")
 
-        payload={"idi":idi, "rand": rand, "response": response}
+        code = BuildDecodeСode(payloadBin)
+        rand = BuildDecodeString(payloadBin, 2, 30)
+        response = BuildDecodeString(payloadBin, 32, 60)
 
+        payload={"code":code, "rand": rand, "response": response}
 
     return payload
 
-
-#2байта-айди пакета, 30 байт логин, 30 байт пароль
-# исли мы знаем как строка кончается то мы терминируем
 def Encode(packetType, payload):
     payloadBin = b''
     if packetType == "auth_request":
