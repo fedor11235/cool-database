@@ -3,9 +3,39 @@
 
 import socket
 import hashlib
+import json
 from moduls import ProtoHelper
 from moduls import Conf
 from moduls import Cheksum
+import time
+
+def Autor():
+    password = hashlib.md5(b"pass11235").hexdigest() 
+    authPayloadDict = {"login":"Fedor", "password": password} 
+    dataAuth = BuildData("auth_request", authPayloadDict)
+
+    sock.send(dataAuth)
+
+    payloadServer = ClientRecvLoop(sock)
+    print ("\nОтвет от сервера:", payloadServer)
+
+    with open("bd/settings.json") as f:
+        settings = json.load(f)
+        settings["idSessions"] = payloadServer["idSessions"]
+
+    with open('bd/settings.json', 'w') as f:
+        json.dump(settings, f)
+
+    return idSessions
+
+def RequestToReceive(idSessions = None):
+
+    getPayloadDict = {"idSessions":idSessions,"number": "1", "keys": "id"}
+    dataGet = BuildData("get_request", getPayloadDict)
+    sock.send(dataGet)
+    payloadServer = ClientRecvLoop(sock)
+
+    print ("\nОтвет от сервера:", payloadServer)
 
 def BuildData(request, payloadDict): 
     
@@ -50,23 +80,18 @@ def ClientRecvLoop(sock):
 sock = socket.socket()
 sock.connect((Conf.HOST, Conf.PORT))
 
+with open("bd/settings.json") as f:
+    settings = json.load(f)
+    idSessions = settings["idSessions"]
+
 #авторизация
-# password = hashlib.md5(b"pass11235").hexdigest() 
-# authPayloadDict = {"login":"Fedor", "password": password} 
-# data = BuildData("auth_request", authPayloadDict)
+#idSessions = Autor()
 
 #запрос на получение данных
-getPayloadDict = {"number": 1, "keys": "id"}
-data = BuildData("get_request", getPayloadDict)
+RequestToReceive(idSessions)
 
-
-print(data)
-sock.send(data)
-
-payloadServer = ClientRecvLoop(sock)
 sock.close()
 
-print ("\nОтвет от сервера:", payloadServer)
 
 
 

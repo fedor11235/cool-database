@@ -39,26 +39,27 @@ def Decode(packetType, payloadBin):
     if packetType == "auth_response":
 
         code = GetDecodeСode(payloadBin)
-        rand = BuildDecodeString(payloadBin, 2, 32)
+        idSessions = BuildDecodeString(payloadBin, 2, 32)
         response = BuildDecodeString(payloadBin, 32, 62)
 
-        payload={"code":code, "rand": rand, "response": response}
+        payload={"code":code, "idSessions": idSessions, "response": response}
 
     if packetType=="get_request":
         
         code = GetDecodeСode(payloadBin)
-        number = BuildDecodeString(payloadBin, 2, 32)
-        key = BuildDecodeString(payloadBin, 32, 62)
+        idSessions = BuildDecodeString(payloadBin, 2, 32)
+        number = BuildDecodeString(payloadBin, 32, 62)
+        key = BuildDecodeString(payloadBin, 62, 92)
 
-        payload={"code":code, "number": number, "keys": key}
+        payload={"code":code, "idSessions": idSessions, "number": number, "keys": key}
 
     if packetType=="get_response":
 
         code = GetDecodeСode(payloadBin)
-        rand = BuildDecodeString(payloadBin, 2, 32)
+        idSessions = BuildDecodeString(payloadBin, 2, 32)
         response = BuildDecodeString(payloadBin, 32, 62)
 
-        payload={"code":code, "rand": rand, "response": response}
+        payload={"code":code, "idSessions": idSessions, "response": response}
 
     return payload
 
@@ -70,18 +71,21 @@ def Encode(packetType, payload):
         payloadBin = BuildProtoString(login, 30) + BuildProtoString(password, 32)
     
     if packetType == "auth_response":
-        rand=random.random()
-        payloadBin = BuildProtoString(rand, 30) + BuildProtoString(payload, 30)
+        idSessions = payload["idSessions"]
+        message = payload["message"]
+        payloadBin = BuildProtoString(idSessions, 30) + BuildProtoString(message, 30)
 
     if packetType=="get_request":
         
+        idSessions = payload["idSessions"]
         number = payload["number"]
         keys = payload["keys"]
-        payloadBin = BuildProtoString(number, 30) + BuildProtoString(keys, 30)
+        payloadBin = BuildProtoString(idSessions, 30) + BuildProtoString(number, 30) + BuildProtoString(keys, 30)
 
     if packetType=="get_response":
-        rand=random.random()
-        payloadBin = BuildProtoString(rand, 30) + BuildProtoString(payload, 30)
+        idSessions = payload["idSessions"]
+        message = payload["message"]
+        payloadBin = BuildProtoString(idSessions, 30) + BuildProtoString(message, 30)
 
 
     return packetTypes[packetType].to_bytes(2, "big") + payloadBin

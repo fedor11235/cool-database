@@ -8,13 +8,19 @@ from moduls import Conf
 from moduls import Cheksum
 import json
 
-def BuildData(code, payloadClient): 
+packetTypes = {
+    "0x1": "auth_request", #запрос авторизации #нечётные клиента и чётные от сервера
+    "0x8001": "auth_response", #ответ авторизации
+    "0x2": "get_request", #запрос на чтение данных
+    "0x2001": "get_response", #ответ на чтение данных
+}
+
+def BuildData(code, payloadClient, idSessions): 
 
     payload = b""
     data = b""
 
     if code == "0x1":
-        rand=random.random()
 
         autor = False
 
@@ -28,90 +34,99 @@ def BuildData(code, payloadClient):
                     autor = True
                     
         if autor:
-            payload = ProtoHelper.Encode("auth_response", "All right auth")
+            idSessions = random.random()
+            payloadDict = {"idSessions": idSessions, "message": "All right auth"}
 
         else:
-            payload = ProtoHelper.Encode("auth_response", "You are not authorized")
+            payloadDict = {"idSessions": idSessions, "message": "You are not authorized"}
+
+        payload = ProtoHelper.Encode("auth_response", payloadDict)
 
     if code == "0x2":
+        
+        if payloadClient["idSessions"] == str(idSessions):
+            selection = {}
+            selectionKey = ""
 
-        results = {}
-        resultKey = ""
-
-        with open("bd/data.json") as f:
-            templates = json.load(f)
+            with open("bd/data.json") as f:
+                templates = json.load(f)
 
 
-        keys = payloadClient["keys"]
-        number = payloadClient["number"]
+            keys = payloadClient["keys"]
+            number = payloadClient["number"]
 
-        keys = keys.split(" ")
+            keys = keys.split(" ")
 
-        for i in range(int(number)):
-            for key in keys:
-                for numbers in number:
-                    resultKey += str(templates[key])
-                results.update({key: resultKey})    
+            for i in range(int(number)):
+                for key in keys:
+                    for numbers in number:
+                        selectionKey += str(templates[key])
+                    selection.update({key: selection})    
 
-        payload = ProtoHelper.Encode("get_response", results)
+            payloadDict = {"idSessions": idSessions, "message": selection}
+
+        else: 
+            payloadDict = {"idSessions": idSessions, "message": "You cannot send requests"}
+        payload = ProtoHelper.Encode("get_response", payloadDict)
 
     if code == "0x0":
-        payload = ProtoHelper.Encode("get_response", "Damaged package")
+
+        payloadDict = {"idSessions": idSessions, "message": "Damaged package"}
+        payload = ProtoHelper.Encode("get_response", payloadDict)
     
     cheksum=Cheksum.Cheksum(payload)
     data = 0x7f.to_bytes(1, "big") + payload + cheksum.to_bytes(2, "big") + 0x7f.to_bytes(1, "big")
 
-    return data
+    return data, idSessions
 
-def ServerRecvLoop(conn):
+def ServerRecvLoop(conn, idSessions):
 
     isRecvPacketProgess = False
     packetData = b''
+
     while True:
-        recvData = conn.recv(8)
+        recvData = conn.recv(8) 
         
         identyPosL = recvData.find(b'\x7f')
         if isRecvPacketProgess :
             packetData += recvData
 
-
         if not isRecvPacketProgess and identyPosL >= 0:
             isRecvPacketProgess = True
-            packetData += recvData[identyPosL:len(recvData)]
-            
+            packetData += recvData[identyPosL:len(recvData)]      
         
         identyPosR = packetData.rfind(b'\x7f')
         if identyPosR > 0 and identyPosL != identyPosR:
             print("End of package")
-            packetData=packetData[identyPosL-2:identyPosR] #identyPosL без -2 при запросе данных
+            print(identyPosL, identyPosR)
+            packetData=packetData[1:identyPosR] #identyPosL без -6 при запросе данных
 
-            print(packetData)
             cheksum = Cheksum.CheksumTransportPackech(packetData)
             if not cheksum:
 
-                payloadBin = packetData[identyPosL:identyPosR]
-                print(payloadBin)
-                payloadClient=ProtoHelper.Decode('get_request', payloadBin)
-
                 print("Damaged package")
-                data = BuildData("0x0", 0)
+                data, idSessions = BuildData("0x0", 0, idSessions)
                 return data
 
             else: 
                 payloadBin = packetData[0:len(packetData)-2]
-                payloadClient=ProtoHelper.Decode('get_request', payloadBin)
-                data = BuildData(payloadClient["code"], payloadClient)
-                print(payloadClient["code"])
-                return data
+                packet = packetTypes[ProtoHelper.GetDecodeСode(payloadBin[0:2])]
+                payloadClient = ProtoHelper.Decode(packet, payloadBin)
+
+                data, idSessions = BuildData(payloadClient["code"], payloadClient, idSessions)  
+
+                return data, idSessions
 
 sock = socket.socket()
 sock.bind((Conf.HOST, Conf.PORT))
 sock.listen(5)
-
+idSessions = None
 while True: 
+    
     conn, addr = sock.accept()
     print ("\nПодключился клиент: ", addr)
-    data = ServerRecvLoop(conn)
+    data, idSessions = ServerRecvLoop(conn, idSessions)
+
     conn.send(data)
 
 conn.close()
