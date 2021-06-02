@@ -30,12 +30,12 @@ import hashlib
 
 # payloadBin = ProtoHelper.BuildProtoString(login, 30) + ProtoHelper.BuildProtoString(password, 0)
 # payload=0x0001.to_bytes(2, "big") + payloadBin
-string = "id_str entities full_text created_at"
-lst = string.split(" ")#разбиение строки на массив
+# string = "id_str entities full_text created_at"
+# lst = string.split(" ")#разбиение строки на массив
 
-print(lst)
-print(lst2)
-ertyuiop[]';lkjhgfdsazxcvbnm,.qwertyuiop[]';lkjhgfdsazxcvbnm
+# print(lst)
+# print(lst2)
+# ertyuiop[]';lkjhgfdsazxcvbnm,.qwertyuiop[]';lkjhgfdsazxcvbnm
 
 # {
 #     "users":[
@@ -83,3 +83,22 @@ ertyuiop[]';lkjhgfdsazxcvbnm,.qwertyuiop[]';lkjhgfdsazxcvbnm
 # {'entities': "[0, 73]{'hashtags': [], 'symbols': [], 'user_mentions': [{'screen_name': 'jurafsky', 'name': 'Dan Jurafsky', 'id': 14968475, 'id_str': '14968475', 'indices': [0, 9]}], 'urls': []}[0, 73]{'hashtags': [], 'symbols': [], 'user_mentions': [{'screen_name': 'jurafsky', 'name': 'Dan Jurafsky', 'id': 14968475, 'id_str': '14968475', 'indices': [0, 9]}], 'urls': []}[0, 73]{'hashtags': [], 'symbols': [], 'user_mentions': [{'screen_name': 'jurafsky', 'name': 'Dan Jurafsky', 'id': 14968475, 'id_str': '14968475', 'indices': [0, 9]}], 'urls': []}[0, 73]{'hashtags': [], 'symbols': [], 'user_mentions': [{'screen_name': 'jurafsky', 'name': 'Dan Jurafsky', 'id': 14968475, 'id_str': '14968475', 'indices': [0, 9]}], 'urls': []}"}
 
 # {'display_text_range': "[0, 73]{'hashtags': [], 'symbols': [], 'user_mentions': [{'screen_name': 'jurafsky', 'name': 'Dan Jurafsky', 'id': 14968475, 'id_str': '14968475', 'indices': [0, 9]}], 'urls': []}[0, 73]{'hashtags': [], 'symbols': [], 'user_mentions': [{'screen_name': 'jurafsky', 'name': 'Dan Jurafsky', 'id': 14968475, 'id_str': '14968475', 'indices': [0, 9]}], 'urls': []}[0, 73]{'hashtags': [], 'symbols': [], 'user_mentions': [{'screen_name': 'jurafsky', 'name': 'Dan Jurafsky', 'id': 14968475, 'id_str': '14968475', 'indices': [0, 9]}], 'urls': []}[0, 73]", 'entities': "[0, 73]{'hashtags': [], 'symbols': [], 'user_mentions': [{'screen_name': 'jurafsky', 'name': 'Dan Jurafsky', 'id': 14968475, 'id_str': '14968475', 'indices': [0, 9]}], 'urls': []}[0, 73]{'hashtags': [], 'symbols': [], 'user_mentions': [{'screen_name': 'jurafsky', 'name': 'Dan Jurafsky', 'id': 14968475, 'id_str': '14968475', 'indices': [0, 9]}], 'urls': []}[0, 73]{'hashtags': [], 'symbols': [], 'user_mentions': [{'screen_name': 'jurafsky', 'name': 'Dan Jurafsky', 'id': 14968475, 'id_str': '14968475', 'indices': [0, 9]}], 'urls': []}[0, 73]{'hashtags': [], 'symbols': [], 'user_mentions': [{'screen_name': 'jurafsky', 'name': 'Dan Jurafsky', 'id': 14968475, 'id_str': '14968475', 'indices': [0, 9]}], 'urls': []}"} !!!!
+
+import json
+
+# with open("test.json") as f:
+#     templates = json.load(f)
+#     users = templates
+#     print(users[0]["login"])
+
+#     users.pop(1)
+#     f.close()
+
+
+# with open('test.json', 'w') as f:
+#     json.dump(users, f)
+#     f.close()
+
+gog = {"log":"dvv", "wvwv":"vdd", "wvwv":"vdd"}
+gog.pop("wvwv")
+print(gog)

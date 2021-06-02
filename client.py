@@ -9,7 +9,20 @@ from moduls import Conf
 from moduls import Cheksum
 import time
 
-def Autor():
+packetTypes = {
+    "auth_request": 0x0001, #запрос авторизации #нечётные клиента и чётные от сервера
+    "auth_response":0x8001, #ответ авторизации, удаление, изменение, регистрацию, удаление пользователя
+
+    "get_request": 0x0002, #запрос на чтение данных
+    "get_response": 0x2001, #ответ на чтение данных
+
+    "delete_request": 0x0003, #запрос на удаление данных
+    "change_request": 0x0004, #запрос на изменение данных
+    "registration_request": 0x0005, #запрос на регистрацию пользователей
+    "delete_users": 0x0006, #запрос на удаление пользователя
+}
+
+def RequestToAutor():
     password = hashlib.md5(b"pass11235").hexdigest() 
     authPayloadDict = {"login":"Fedor", "password": password} 
     dataAuth = BuildData("auth_request", authPayloadDict)
@@ -32,6 +45,40 @@ def RequestToReceive(idSessions = None):
 
     getPayloadDict = {"idSessions":idSessions,"number": "1", "keys": "id"}
     dataGet = BuildData("get_request", getPayloadDict)
+    sock.send(dataGet)
+    payloadServer = ClientRecvLoop(sock)
+
+    print ("\nОтвет от сервера:", payloadServer)
+
+def RequestToDeleteData(idSessions = None):
+    getPayloadDict = {"idSessions":idSessions,"keys": "created_at"}
+    dataGet = BuildData("delete_request", getPayloadDict)
+    sock.send(dataGet)
+    payloadServer = ClientRecvLoop(sock)
+
+    print ("\nОтвет от сервера:", payloadServer)
+
+def RequestToChangeData(idSessions = None):
+    getPayloadDict = {"idSessions":idSessions,"keys": "id full_text", "value":"3333 9999"}
+    dataGet = BuildData("change_request", getPayloadDict)
+    sock.send(dataGet)
+    payloadServer = ClientRecvLoop(sock)
+
+    print ("\nОтвет от сервера:", payloadServer)
+
+def RequestToRegistration(idSessions = None):
+    password = hashlib.md5(b"pass11235").hexdigest() 
+    getPayloadDict = {"idSessions":idSessions,"login": "Rudi", "password":password}
+    dataGet = BuildData("registration_request", getPayloadDict)
+    sock.send(dataGet)
+    payloadServer = ClientRecvLoop(sock)
+
+    print ("\nОтвет от сервера:", payloadServer)
+
+def RequestToDeleteUser(idSessions = None):
+    password = hashlib.md5(b"pass11235").hexdigest() 
+    getPayloadDict = {"idSessions":idSessions,"login": "Fedor", "password":password}
+    dataGet = BuildData("delete_users", getPayloadDict)
     sock.send(dataGet)
     payloadServer = ClientRecvLoop(sock)
 
@@ -85,10 +132,17 @@ with open("bd/settings.json") as f:
     idSessions = settings["idSessions"]
 
 #авторизация
-#idSessions = Autor()
-
+#idSessions = RequestToAutor()
 #запрос на получение данных
-RequestToReceive(idSessions)
+#RequestToReceive(idSessions)
+#запрос на изменение данных
+#RequestToChangeData(idSessions)
+#запрос на удаление данных
+#RequestToDeleteData() #!!!!!!
+#запрос на удаление пользователя
+#RequestToDeleteUser(idSessions)
+#регистрация
+#RequestToRegistration()
 
 sock.close()
 
