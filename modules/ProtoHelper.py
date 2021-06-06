@@ -54,10 +54,9 @@ def Decode(packetType, payloadBin):
         
         code = GetDecodeСode(payloadBin)
         idSessions = BuildDecodeString(payloadBin, 2, 32)
-        number = BuildDecodeString(payloadBin, 32, 62)
-        key = BuildDecodeString(payloadBin, 62, 92)
+        key = BuildDecodeString(payloadBin, 32, 62)
 
-        payload={"code":code, "idSessions": idSessions, "number": number, "keys": key}
+        payload={"code":code, "idSessions": idSessions, "keys": key}
 
     if packetType == "get_response":
 
@@ -122,9 +121,9 @@ def Encode(packetType, payload):
     if packetType == "get_request":
         
         idSessions = payload["idSessions"]
-        number = payload["number"]
+
         keys = payload["keys"]
-        payloadBin = BuildProtoString(idSessions, 30) + BuildProtoString(number, 30) + BuildProtoString(keys, 30)
+        payloadBin = BuildProtoString(idSessions, 30) + BuildProtoString(keys, 30)
 
     if packetType == "get_response":
         idSessions = payload["idSessions"]

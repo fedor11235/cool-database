@@ -26,9 +26,6 @@ def CheksumTransportPackech(packetData):
 
     cheksumClient = int.from_bytes(cheksumClient,"big")
 
-    print(cheksumClient)
-    print(cheksumServer)
-
     if cheksumClient == cheksumServer:
         cheksum = True
 

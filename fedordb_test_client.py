@@ -4,10 +4,11 @@
 import socket
 import hashlib
 import json
-from moduls import ProtoHelper
-from moduls import Conf
-from moduls import Cheksum
+from modules import ProtoHelper
+from storage import Conf
+from modules import Cheksum
 import time
+from modules import Base
 
 packetTypes = {
     "auth_request": 0x0001, #запрос авторизации #нечётные клиента и чётные от сервера
@@ -32,18 +33,15 @@ def RequestToAutor():
     payloadServer = ClientRecvLoop(sock)
     print ("\nОтвет от сервера:", payloadServer)
 
-    with open("bd/settings.json") as f:
-        settings = json.load(f)
-        settings["idSessions"] = payloadServer["idSessions"]
-
-    with open('bd/settings.json', 'w') as f:
-        json.dump(settings, f)
+    bd = Base.load("bd/settingsCL.json", False)
+    bd.set("idSessions",payloadServer["idSessions"])
+    bd.dump()
 
     return idSessions
 
 def RequestToReceive(idSessions = None):
 
-    getPayloadDict = {"idSessions":idSessions,"number": "1", "keys": "id"}
+    getPayloadDict = {"idSessions":idSessions, "keys": "id"}
     dataGet = BuildData("get_request", getPayloadDict)
     sock.send(dataGet)
     payloadServer = ClientRecvLoop(sock)
@@ -51,7 +49,7 @@ def RequestToReceive(idSessions = None):
     print ("\nОтвет от сервера:", payloadServer)
 
 def RequestToDeleteData(idSessions = None):
-    getPayloadDict = {"idSessions":idSessions,"keys": "created_at"}
+    getPayloadDict = {"idSessions":idSessions,"keys": "id"}
     dataGet = BuildData("delete_request", getPayloadDict)
     sock.send(dataGet)
     payloadServer = ClientRecvLoop(sock)
@@ -59,7 +57,7 @@ def RequestToDeleteData(idSessions = None):
     print ("\nОтвет от сервера:", payloadServer)
 
 def RequestToChangeData(idSessions = None):
-    getPayloadDict = {"idSessions":idSessions,"keys": "id full_text", "value":"3333 9999"}
+    getPayloadDict = {"idSessions":idSessions,"keys": "idu full_text", "value":"pop ioi"}
     dataGet = BuildData("change_request", getPayloadDict)
     sock.send(dataGet)
     payloadServer = ClientRecvLoop(sock)
@@ -127,9 +125,8 @@ def ClientRecvLoop(sock):
 sock = socket.socket()
 sock.connect((Conf.HOST, Conf.PORT))
 
-with open("bd/settings.json") as f:
-    settings = json.load(f)
-    idSessions = settings["idSessions"]
+bd = Base.load("bd/settingsCL.json", False)
+idSessions = bd["idSessions"]
 
 #авторизация
 #idSessions = RequestToAutor()
@@ -138,11 +135,11 @@ with open("bd/settings.json") as f:
 #запрос на изменение данных
 #RequestToChangeData(idSessions)
 #запрос на удаление данных
-#RequestToDeleteData() #!!!!!!
+#RequestToDeleteData(idSessions) 
 #запрос на удаление пользователя
 #RequestToDeleteUser(idSessions)
 #регистрация
-#RequestToRegistration()
+#RequestToRegistration(idSessions)
 
 sock.close()
 
