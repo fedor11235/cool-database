@@ -3,11 +3,9 @@
 
 import socket
 import hashlib
-import json
 from modules import ProtoHelper
 from storage import Conf
 from modules import Cheksum
-import time
 from modules import Base
 
 packetTypes = {

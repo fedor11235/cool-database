@@ -8,7 +8,6 @@ from modules import ProtoHelper
 from storage import Conf
 from modules import Cheksum
 from modules import Base
-import json
 
 packetTypes = {
     "0x1": "auth_request", #запрос авторизации #нечётные клиента и чётные от сервера
