@@ -6,10 +6,10 @@ from threading import Thread
 
 
 def load(location, auto_dump, sig=True):
-    return PickleDB(location, auto_dump, sig)
+    return FedorDB(location, auto_dump, sig)
 
 
-class PickleDB(object):
+class FedorDB(object):
 
     key_string_error = TypeError('Key/name must be a string!')
 
