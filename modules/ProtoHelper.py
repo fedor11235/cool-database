@@ -16,7 +16,7 @@ packetTypes = {
 }
 
 def BuildProtoString(in_str, out_len):
-    out_str = bytearray(out_len)
+    out_str = bytearray(str(out_len), encoding = "utf-8")
     in_str = bytearray(str(in_str), encoding = "utf-8")
     out_str[0:len(in_str)] = in_str
     return out_str
