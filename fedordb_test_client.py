@@ -6,7 +6,13 @@ import hashlib
 from modules import ProtoHelper
 from storage import Conf
 from modules import Cheksum
+
 from modules import Base
+
+
+
+from modules import Transport
+from modules import Session
 
 packetTypes = {
     "auth_request": 0x0001, #запрос авторизации #нечётные клиента и чётные от сервера
@@ -21,14 +27,14 @@ packetTypes = {
     "delete_users": 0x0006, #запрос на удаление пользователя
 }
 
-def RequestToAutor():
+def request_to_auth():
     password = hashlib.md5(b"pass11235").hexdigest() 
     authPayloadDict = {"login":"Fedor", "password": password} 
-    dataAuth = BuildData("auth_request", authPayloadDict)
+    dataAuth = build_data("auth_request", authPayloadDict)
 
     sock.send(dataAuth)
 
-    payloadServer = ClientRecvLoop(sock)
+    payloadServer = client_recv_loop(sock)
     print ("\nОтвет от сервера:", payloadServer)
 
     bd = Base.load("bd/settingsCL.json", False)
@@ -37,88 +43,59 @@ def RequestToAutor():
 
     return idSessions
 
-def RequestToReceive(idSessions = None):
-
+def request_to_receive(idSessions = None):
     getPayloadDict = {"idSessions":idSessions, "keys": "id"}
-    dataGet = BuildData("get_request", getPayloadDict)
+    dataGet = build_data("get_request", getPayloadDict)
     sock.send(dataGet)
-    payloadServer = ClientRecvLoop(sock)
+    payloadServer = client_recv_loop(sock)
 
     print ("\nОтвет от сервера:", payloadServer)
 
-def RequestToDeleteData(idSessions = None):
+def request_to_deleteData(idSessions = None):
     getPayloadDict = {"idSessions":idSessions,"keys": "id"}
-    dataGet = BuildData("delete_request", getPayloadDict)
+    dataGet = build_data("delete_request", getPayloadDict)
     sock.send(dataGet)
-    payloadServer = ClientRecvLoop(sock)
+    payloadServer = client_recv_loop(sock)
 
     print ("\nОтвет от сервера:", payloadServer)
 
-def RequestToChangeData(idSessions = None):
+def request_to_changeData(idSessions = None):
     getPayloadDict = {"idSessions":idSessions,"keys": "idu full_text", "value":"pop ioi"}
-    dataGet = BuildData("change_request", getPayloadDict)
+    dataGet = build_data("change_request", getPayloadDict)
     sock.send(dataGet)
-    payloadServer = ClientRecvLoop(sock)
+    payloadServer = client_recv_loop(sock)
 
     print ("\nОтвет от сервера:", payloadServer)
 
-def RequestToRegistration(idSessions = None):
+def request_to_registration(idSessions = None):
     password = hashlib.md5(b"pass11235").hexdigest() 
     getPayloadDict = {"idSessions":idSessions,"login": "Rudi", "password":password}
-    dataGet = BuildData("registration_request", getPayloadDict)
+    dataGet = build_data("registration_request", getPayloadDict)
     sock.send(dataGet)
-    payloadServer = ClientRecvLoop(sock)
+    payloadServer = client_recv_loop(sock)
 
     print ("\nОтвет от сервера:", payloadServer)
 
-def RequestToDeleteUser(idSessions = None):
+def request_to_deleteUser(idSessions = None):
     password = hashlib.md5(b"pass11235").hexdigest() 
     getPayloadDict = {"idSessions":idSessions,"login": "Fedor", "password":password}
-    dataGet = BuildData("delete_users", getPayloadDict)
+    dataGet = build_data("delete_users", getPayloadDict)
     sock.send(dataGet)
-    payloadServer = ClientRecvLoop(sock)
+    payloadServer = client_recv_loop(sock)
 
     print ("\nОтвет от сервера:", payloadServer)
 
-def BuildData(request, payloadDict): 
-    
-    payload = ProtoHelper.Encode(request, payloadDict)
-    cheksum = Cheksum.Cheksum(payload)
-    data = 0x7f.to_bytes(1, "big") + payload + cheksum.to_bytes(2, "big") + 0x7f.to_bytes(1, "big")
-    return data
 
-def ClientRecvLoop(sock):
 
-    isRecvPacketProgess = False
-    packetData = b''
+def client_recv_loop(sock):
+    transport = Transport.TransportController(sock=sock)
+    session = Session.ClientSession(transport=transport)
+    session.do_login()
     while True:
+        dataRx = sock.recv(1024)
+        transport.on_recv(dataRx)
 
-        recvData = sock.recv(8)
-        
-        identyPosL = recvData.find(b'\x7f')
-        if isRecvPacketProgess :
-            packetData += recvData
-
-        if not isRecvPacketProgess and identyPosL >= 0:
-            isRecvPacketProgess = True
-            packetData += recvData[identyPosL:len(recvData)]
-        
-        identyPosR = packetData.rfind(b'\x7f')
-        if identyPosR > 0 and identyPosL != identyPosR:
-            print("End of package")
-
-            packetData=packetData[identyPosL:identyPosR]
-            
-
-            cheksum = Cheksum.CheksumTransportPackech(packetData)
-            if not cheksum:
-                return "Damaged package Client"
-
-            else: 
-                payloadBin = packetData[0:len(packetData)-2]
-                data = ProtoHelper.Decode('auth_response', payloadBin)
-
-                return data
+ 
 
 sock = socket.socket()
 sock.connect((Conf.HOST, Conf.PORT))
@@ -126,12 +103,17 @@ sock.connect((Conf.HOST, Conf.PORT))
 bd = Base.load("bd/settingsCL.json", False)
 idSessions = bd["idSessions"]
 
+client_recv_loop(sock)
+
 #авторизация
-#idSessions = RequestToAutor()
+#idSessions = request_to_auth()
+
 #запрос на получение данных
 #RequestToReceive(idSessions)
+
 #запрос на изменение данных
 #RequestToChangeData(idSessions)
+
 #запрос на удаление данных
 #RequestToDeleteData(idSessions) 
 #запрос на удаление пользователя

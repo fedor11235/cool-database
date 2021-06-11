@@ -1,6 +1,7 @@
 #CRC16
-def Cheksum(data: bytes, poly=0x8408):
-    
+__all__ = ['calc', 'check']
+
+def calc(data: bytes, poly=0x8408):
     data = bytearray(data)
     crc = 0xFFFF
     for b in data:
@@ -16,13 +17,12 @@ def Cheksum(data: bytes, poly=0x8408):
     
     return crc & 0xFFFF
 
-def CheksumTransportPackech(packetData):
-
+def check(packetData):
     cheksum = False
     payload = packetData[0:len(packetData)-2]
 
     cheksumClient = packetData[len(packetData)-2:len(packetData)]
-    cheksumServer = Cheksum(payload)
+    cheksumServer = cheksum(payload)
 
     cheksumClient = int.from_bytes(cheksumClient,"big")
 

@@ -1,5 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+
+from modules import CheckSum
+
+__all__ = ['build_transport_frame', 'decode_packet', 'encode_packet']
+
 packetTypes = {
     "auth_request": 0x0001, #запрос авторизации #нечётные клиента и чётные от сервера
     "auth_response":0x8001, #ответ авторизации, удаление, изменение, регистрацию, удаление пользователя
@@ -13,98 +18,78 @@ packetTypes = {
     "delete_users": 0x0006, #запрос на удаление пользователя
 }
 
-def BuildProtoString(in_str, out_len):
-    out_str = bytearray(str(out_len), encoding = "utf-8")
-    in_str = bytearray(str(in_str), encoding = "utf-8")
-    out_str[0:len(in_str)] = in_str
-    return out_str
+def build_transport_frame(request, payloadDict): 
+    payload = encode(request, payloadDict)
+    cheksum = CheckSum.calc(payload)
+    data = 0x7f.to_bytes(1, "big") + payload + cheksum.to_bytes(2, "big") + 0x7f.to_bytes(1, "big")
+    return data
 
-def BuildDecodeString(in_str, start_cut, end_cut):
-    out_str = in_str[start_cut:end_cut].decode("utf-8")
-    out_str = out_str.replace("\x00", "")
-    return out_str
+def parse_transport_frame(dataRx):
+    identyPosL = dataRx.find(b'\x7f')
+    identyPosR = dataRx.rfind(b'\x7f')
+    if identyPosL == 0 and identyPosR > 0:
+        return b'', dataRx[identyPosL:identyPosR], b''
+    if identyPosL >= 0 and identyPosR < 0:
+        return b'', b'', b''
+    if identyPosL > 0:
+        return b'', b'', b''
 
-def GetDecodeСode(in_str):
-    out_str = int.from_bytes(in_str[0:2],"big")
-    out_str = hex(out_str)
-    return out_str
-
-def Decode(packetType, payloadBin):
-
+def decode_packet(packetType, payloadBin):
     payload=''
     if packetType == "auth_request":
-        
         code = GetDecodeСode(payloadBin)
         login = BuildDecodeString(payloadBin, 2, 32)
         password = BuildDecodeString(payloadBin, 32, 64)
-
         payload = {"code":code, "login": login, "password": password}
 
     if packetType == "auth_response":
-
         code = GetDecodeСode(payloadBin)
         idSessions = BuildDecodeString(payloadBin, 2, 32)
         response = BuildDecodeString(payloadBin, 32, 62)
-
         payload={"code":code, "idSessions": idSessions, "response": response}
 
     if packetType == "get_request":
-        
         code = GetDecodeСode(payloadBin)
         idSessions = BuildDecodeString(payloadBin, 2, 32)
         key = BuildDecodeString(payloadBin, 32, 62)
-
         payload={"code":code, "idSessions": idSessions, "keys": key}
 
     if packetType == "get_response":
-
         code = GetDecodeСode(payloadBin)
         idSessions = BuildDecodeString(payloadBin, 2, 32)
         response = BuildDecodeString(payloadBin, 32, 62)
-
         payload={"code":code, "idSessions": idSessions, "response": response}
 
-
-
     if packetType == "delete_request":
-        
         code = GetDecodeСode(payloadBin)
         idSessions = BuildDecodeString(payloadBin, 2, 32)
         key = BuildDecodeString(payloadBin, 32, 62)
-
         payload={"code":code, "idSessions": idSessions, "keys": key}
 
     if packetType == "change_request":
-        
         code = GetDecodeСode(payloadBin)
         idSessions = BuildDecodeString(payloadBin, 2, 32)
         key = BuildDecodeString(payloadBin, 32, 62)
         value = BuildDecodeString(payloadBin, 62, 92)
-
         payload={"code":code, "idSessions": idSessions, "value": value, "keys": key}
 
     if packetType == "registration_request":
-        
         code = GetDecodeСode(payloadBin)
         idSessions = BuildDecodeString(payloadBin, 2, 32)
         login = BuildDecodeString(payloadBin, 32, 62)
         password = BuildDecodeString(payloadBin, 62, 94)
-
         payload={"code":code, "idSessions": idSessions, "login": login, "password": password}
 
     if packetType == "delete_users":
-        
         code = GetDecodeСode(payloadBin)
         idSessions = BuildDecodeString(payloadBin, 2, 32)
         login = BuildDecodeString(payloadBin, 32, 62)
         password = BuildDecodeString(payloadBin, 62, 94)
-
         payload={"code":code, "idSessions": idSessions, "login": login, "password": password}
-
 
     return payload
 
-def Encode(packetType, payload):
+def encode_packet(packetType, payload):
     payloadBin = b''
     if packetType == "auth_request":
         login = payload["login"]
@@ -127,10 +112,6 @@ def Encode(packetType, payload):
         idSessions = payload["idSessions"]
         message = payload["message"]
         payloadBin = BuildProtoString(idSessions, 30) + BuildProtoString(message, 30)
-
-    
-
-
 
     if packetType == "delete_request":
         
@@ -162,3 +143,23 @@ def Encode(packetType, payload):
 
     return packetTypes[packetType].to_bytes(2, "big") + payloadBin
     
+
+
+
+'''
+def build_proto_string(in_str, out_len):
+    out_str = bytearray(str(out_len), encoding = "utf-8")
+    in_str = bytearray(str(in_str), encoding = "utf-8")
+    out_str[0:len(in_str)] = in_str
+    return out_str
+
+def BuildDecodeString(in_str, start_cut, end_cut):
+    out_str = in_str[start_cut:end_cut].decode("utf-8")
+    out_str = out_str.replace("\x00", "")
+    return out_str
+
+def GetDecodeСode(in_str):
+    out_str = int.from_bytes(in_str[0:2],"big")
+    out_str = hex(out_str)
+    return out_str
+'''
